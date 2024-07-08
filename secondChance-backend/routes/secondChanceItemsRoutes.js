@@ -26,17 +26,13 @@ const upload = multer({ storage: storage });
 router.get('/', async (req, res, next) => {
     logger.info('/ called');
     try {
-        //Step 2: task 1 - insert code here
-        //Step 2: task 2 - insert code here
-        //Step 2: task 3 - insert code here
-        //Step 2: task 4 - insert code here
-
-        const collection = db.collection("secondChanceItems");
+        const dbInstance = await connectToDatabase()
+        const secondChanceItemsCollection = db.collection('secondChangeItems')
         const secondChanceItems = await collection.find({}).toArray();
         res.json(secondChanceItems);
-    } catch (e) {
-        logger.console.error('oops something went wrong', e)
-        next(e);
+    } catch (error) {
+        logger.console.error('oops something went wrong', error)
+        next(error);
     }
 });
 
