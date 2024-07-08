@@ -27,7 +27,8 @@ router.get('/', async (req, res, next) => {
     logger.info('/ called');
     try {
         const dbInstance = await connectToDatabase()
-        const secondChanceItemsCollection = db.collection('secondChangeItems')
+        const collection = dbInstance.collection('secondChanceItems')
+        console.log(collection)
         const secondChanceItems = await collection.find({}).toArray();
         res.json(secondChanceItems);
     } catch (error) {
@@ -37,14 +38,17 @@ router.get('/', async (req, res, next) => {
 });
 
 // Add a new item
-router.post('/', {Step 3: Task 6 insert code here}, async(req, res,next) => {
+router.post('/', upload.single('file'), async(req, res,next) => {
     try {
+        const dbInstance = await connectToDatabase()
+        const collection = dbInstance.collection('secondChanceItems')
 
-        //Step 3: task 1 - insert code here
-        //Step 3: task 2 - insert code here
-        //Step 3: task 3 - insert code here
-        //Step 3: task 4 - insert code here
-        //Step 3: task 5 - insert code here
+        let secondChanceItem = req.body
+        const lastItemID = await collection.findOne({}, {sort: {'id': -1}, projection: {_id: 0, id: 1}})
+        secondChanceItem.id = lastItemID + 1
+        secondChanceItem.created_at = new Date()
+        secondChanceItem = await collection.insertOne(secondChanceItem)
+        
         res.status(201).json(secondChanceItem.ops[0]);
     } catch (e) {
         next(e);
@@ -54,23 +58,42 @@ router.post('/', {Step 3: Task 6 insert code here}, async(req, res,next) => {
 // Get a single secondChanceItem by ID
 router.get('/:id', async (req, res, next) => {
     try {
-        //Step 4: task 1 - insert code here
-        //Step 4: task 2 - insert code here
-        //Step 4: task 3 - insert code here
-        //Step 4: task 4 - insert code here
-    } catch (e) {
-        next(e);
+        const dbInstance = await connectToDatabase()
+        const collection = dbInstance.collection('secondChanceItems')
+        const {id} = req.params
+        const secondChanceItem = collection.findOne({id})
+        if (!secondChanceItem) return res.status(404).json({message: `Item with id ${id} not found`})
+        res.json(secondChanceItem)
+    } catch (error) {
+        next(error);
     }
 });
 
 // Update and existing item
 router.put('/:id', async(req, res,next) => {
     try {
-        //Step 5: task 1 - insert code here
-        //Step 5: task 2 - insert code here
-        //Step 5: task 3 - insert code here
-        //Step 5: task 4 - insert code here
-        //Step 5: task 5 - insert code here
+        const dbInstance = await connectToDatabase()
+        const collection = dbInstance.collection('secondChanceItems')
+
+        const {id} = req.params
+
+        const secondChanceItem = collection.findOne({id})
+        if (!secondChanceItem) return res.status(404).json({message: `Item with id ${id} not found`})
+
+        secondChanceItem.category = req.body.category;
+        secondChanceItem.condition = req.body.condition;
+        secondChanceItem.age_days = req.body.age_days;
+        secondChanceItem.description = req.body.description;
+        secondChanceItem.age_years = Number((secondChanceItem.age_days/365).toFixed(1));
+        secondChanceItem.updatedAt = new Date();
+
+        const updatepreloveItem = await collection.findOneAndUpdate(
+            { id },
+            { $set: secondChanceItem },
+            { returnDocument: 'after' }
+        );
+
+        res.status(200).json(secondChanceItem)
     } catch (e) {
         next(e);
     }
@@ -79,10 +102,18 @@ router.put('/:id', async(req, res,next) => {
 // Delete an existing item
 router.delete('/:id', async(req, res,next) => {
     try {
-        //Step 6: task 1 - insert code here
-        //Step 6: task 2 - insert code here
-        //Step 6: task 3 - insert code here
-        //Step 6: task 4 - insert code here
+        const dbInstance = await connectToDatabase()
+        const collection = dbInstance.collection('secondChanceItems')
+
+        const {id} = req.params
+        
+        const result = await collection.deleteOne({ id: itemId });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: 'Item not found' });
+        }
+
+        return res.status(200).json({message: 'Item deleted successfully'})
     } catch (e) {
         next(e);
     }
