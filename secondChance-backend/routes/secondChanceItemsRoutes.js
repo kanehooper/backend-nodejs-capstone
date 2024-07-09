@@ -26,8 +26,8 @@ const upload = multer({ storage: storage });
 router.get('/', async (req, res, next) => {
     logger.info('/ called');
     try {
-        const dbInstance = await connectToDatabase()
-        const collection = dbInstance.collection('secondChanceItems')
+        const db = await connectToDatabase()
+        const collection = db.collection('secondChanceItems')
         console.log(collection)
         const secondChanceItems = await collection.find({}).toArray();
         res.json(secondChanceItems);
@@ -40,8 +40,8 @@ router.get('/', async (req, res, next) => {
 // Add a new item
 router.post('/', upload.single('file'), async(req, res,next) => {
     try {
-        const dbInstance = await connectToDatabase()
-        const collection = dbInstance.collection('secondChanceItems')
+        const db = await connectToDatabase()
+        const collection = db.collection('secondChanceItems')
 
         let secondChanceItem = req.body
         const lastItemID = await collection.findOne({}, {sort: {'id': -1}, projection: {_id: 0, id: 1}})
@@ -58,8 +58,8 @@ router.post('/', upload.single('file'), async(req, res,next) => {
 // Get a single secondChanceItem by ID
 router.get('/:id', async (req, res, next) => {
     try {
-        const dbInstance = await connectToDatabase()
-        const collection = dbInstance.collection('secondChanceItems')
+        const db = await connectToDatabase()
+        const collection = db.collection('secondChanceItems')
         const {id} = req.params
         const secondChanceItem = collection.findOne({id})
         if (!secondChanceItem) return res.status(404).json({message: `Item with id ${id} not found`})
@@ -72,8 +72,8 @@ router.get('/:id', async (req, res, next) => {
 // Update and existing item
 router.put('/:id', async(req, res,next) => {
     try {
-        const dbInstance = await connectToDatabase()
-        const collection = dbInstance.collection('secondChanceItems')
+        const db = await connectToDatabase()
+        const collection = db.collection('secondChanceItems')
 
         const {id} = req.params
 
@@ -102,8 +102,8 @@ router.put('/:id', async(req, res,next) => {
 // Delete an existing item
 router.delete('/:id', async(req, res,next) => {
     try {
-        const dbInstance = await connectToDatabase()
-        const collection = dbInstance.collection('secondChanceItems')
+        const db = await connectToDatabase()
+        const collection = db.collection('secondChanceItems')
 
         const {id} = req.params
         
