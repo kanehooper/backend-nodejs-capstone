@@ -113,7 +113,7 @@ router.put('/update', async (req, res) => {
         // Task 6: Update the user credentials in the database
         const updatedUser = await users.findOneAndUpdate(
             {email},
-            {#set: existingUser},
+            {$set: existingUser},
             {returnDocument: 'after'}
         )
 
