@@ -5,6 +5,8 @@ const logger = require('../logger');
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
+const {JWT_SECRET} = process.env
+
 router.post('/register', async (req, res) => {
     try {
         
@@ -50,3 +52,40 @@ router.post('/register', async (req, res) => {
         return res.status(500).json({message: 'Internal server error'})    
     }
 })
+
+router.post('/login', async (req, res) => {
+    try {
+        // Task 1: Connect to `secondChance` in MongoDB through `connectToDatabase` in `db.js`.
+        const db = connectToDatabase()
+
+        // Task 2: Access MongoDB `users` collection
+        const users = db.collection('users')
+
+        // Task 3: Check for user credentials in database
+        const user = await collection.findOne({email: req.body.email})
+
+        // Task 4: Check if the password matches the encrypted password and send appropriate message on mismatch
+        if (!user) return res.status(404).json({message: 'User does not exist'})
+        let result = await bcrypt.compare(req.body.password, user.password)
+        if (!result) return res.status(400).json({message: 'Password invlaid'})
+
+        // Task 5: Fetch user details from a database
+        const userName = user.firstName
+        const userEmail = user.email
+
+        // Task 6: Create JWT authentication if passwords match with user._id as payload
+        let payload = {
+            user: {
+                id: user._id.toString()
+            }
+        }
+        jwt.sign(user._id, JWT_SECRET)
+
+        res.json({authtoken, userName, userEmail });
+        // Task 7: Send appropriate message if the user is not found
+    } catch (e) {
+         return res.status(500).send('Internal server error');
+    }
+})
+
+module.exports = router
